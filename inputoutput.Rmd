@@ -1,0 +1,114 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+wiot2014 <- read.csv('Desktop/wiot14.csv', stringsAsFactors = FALSE)
+```
+
+```{r}
+wiot14
+```
+
+```{r}
+Z <- wiot2014[2:2465,3:2466]
+row.names(Z) <- colnames(Z)
+```
+
+```{r}
+VALU <- wiot2014[2472, 3:2466]
+row.names(VALU) <- wiot2014[2472,1]
+```
+
+```{r}
+FD <- wiot2014[2:2465,2467:2686]
+row.names(FD) <- row.names(Z)
+X <-wiot2014[2473, 3:2466]
+row.names(X) <- wiot2014[2473,1]
+```
+
+```{r}
+Z <- as.matrix(apply(Z, 2, as.numeric))
+VALU <- as.matrix(apply(VALU, 2, as.numeric))
+X <- as.matrix(apply(X, 2, as.numeric))
+FD <- as.matrix(apply(FD, 2, as.numeric))
+```
+
+```{r}
+PROD <- rowSums(Z)
+ones <- matrix(data = 1, nrow = nrow(Z), ncol = ncol(Z))
+for (i in 1:44) {
+    ones[(i*56-55):(56*i), (i*56-55):(56*i)] <- 0
+}
+```
+
+```{r}
+ones1 <- matrix(data = 1, nrow = nrow(FD), ncol = ncol(FD))
+for (i in 1:44) {
+    ones1[(i*4-3):(4*i), (i*4-3):(4*i)] <- 0
+}
+
+```
+
+```{r}
+A <- Z/PROD
+```
+
+```{r}
+A[is.na(A)] <- 0
+is.na(A)<-sapply(A, is.infinite)
+A[is.na(A)]<-0
+```
+
+```{r}
+B <- solve(diag(nrow(Z)) - A)
+```
+
+```{r}
+V <- VALU/PROD
+V[is.na(V)] <- 0
+is.na(V)<-sapply(V, is.infinite)
+V[is.na(V)]<-0
+
+V_hat <- diag(as.vector(V))
+```
+
+```{r}
+IMGR_DVA <- colSums(V_hat %*% B %*% diag(rowSums(cbind((Z*ones),(FD*ones1)))))
+```
+
+```{r}
+IMGR_DVA <- as.data.frame(IMGR_DVA)
+```
+
+```
+
+
+
+
+
+
